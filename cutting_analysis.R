@@ -160,25 +160,25 @@ cuts$time2 <- as.numeric(cuts$time2)
 # Make subset with only those variables that will be used in model.
 cuts2 <- select(cuts, rater, interID, vehicleStatus, traffic, driverSex, driverAge, time2, cutoff)
 
-# Center and scale numeric variables
+# Convert continuous predictors to z-scores using scale(). This is done in an effort to get rid of warnings when I try to fit a glmer model below.
 cuts2$vehicleStatus <- scale(cuts2$vehicleStatus)
 cuts2$traffic <- scale(cuts2$traffic)
 cuts2$driverAge <- scale(cuts2$driverAge)
 cuts2$time2 <- scale(cuts2$time2)
 
-# Adjust contrasts to balance driverSex. 39% of data from females, 61% from males.
+# Adjust contrasts to balance driverSex. Male is the default, so the model coefficient will indicate whether males are more/less likely to cut than females.
 xtabs(~ driverSex, cuts2) / length(cuts2$rater)
-contrasts(cuts2$driverSex) = cbind('Male' = c(-.61, .39))
+contrasts(cuts2$driverSex) = cbind("Male" = c(-.61, .39))
 
-# Model with maximal random effects structure. Multiple convergence warnings.
-cuts.glmer19 <- glmer(cutoff == "yes" ~ vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2 + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|rater) + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|interID), data = cuts2, family = "binomial")
+# Model with maximal random effects structure. Throws multiple convergence warnings.
+cuts2.glmer1 <- glmer(cutoff == "yes" ~ vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2 + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|rater) + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|interID), data = cuts2, family = "binomial")
 
 # Restart from previous fit, but now bumping up the maximum number of iterations and using the bobyqa optimizer for both phases.
-ss <- getME(cuts.glmer19, c("theta","fixef"))
-cuts.glmer20 <- update(cuts.glmer19, start = ss, control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e6)))
+ss <- getME(cuts2.glmer1, c("theta","fixef"))
+cuts2.glmer2 <- update(cuts2.glmer1, start = ss, control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e6)))
 
 # Calculate 95% CIs for fixed effects parameters using the Wald method. This is required for submissions to the Personality and Social Psychology Bulletin.
-ci.wald <- confint(cuts.glmer20, level = 0.95, method = "Wald", .progress = "txt")
+ci.wald <- confint(cuts2.glmer2, level = 0.95, method = "Wald", .progress = "txt")
 
 # Print variance-covariance matrix. This is required for submission to Arcchives of Scientific Psychology.
-vcov(cuts.glmer20)
+vcov(cuts2.glmer2)
