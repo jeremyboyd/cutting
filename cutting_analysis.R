@@ -11,6 +11,7 @@ library(timeDate)
 library(lme4)
 library(plyr)
 library(gridExtra)
+library(dplyr)
 
 # Read in data.
 cuts = read.delim('Experiment 1B data 140122.txt', header = TRUE)
@@ -153,53 +154,34 @@ dev.off()
 # MIXED MODEL WITH RANDOM EFFECTS FOR RATERS & INTERSECTIONS
 ################################################################
 
-# NOTE THAT NEWEST VERSION OF LME4 (V. 1.1-6) IS THROWING SOME WARNING MESSAGES THAT IT DIDN'T USE BEFORE. ALSO, WHILE BETAS ARE THE SAME AS BEFORE, Z AND P VALUES ARE SUBTLY DIFFERENT.
+# Convert time2 to numeric
+cuts$time2 <- as.numeric(cuts$time2)
 
-# Center continuous predictors: vehicleStatus, traffic, driverAge, and time2.
-cuts$cVehicleStatus = cuts$vehicleStatus - mean(cuts$vehicleStatus)
-cuts$cTraffic = cuts$traffic - mean(cuts$traffic)
-cuts$cDriverAge = cuts$driverAge - mean(cuts$driverAge)
-cuts$cTime2 = cuts$time2 - mean(cuts$time2)
+# Make subset with only those variables that will be used in model.
+cuts2 <- select(cuts, rater, interID, vehicleStatus, traffic, driverSex, driverAge, time2, cutoff)
+
+# Center and scale numeric variables
+cuts2$vehicleStatus <- scale(cuts2$vehicleStatus)
+cuts2$traffic <- scale(cuts2$traffic)
+cuts2$driverAge <- scale(cuts2$driverAge)
+cuts2$time2 <- scale(cuts2$time2)
 
 # Adjust contrasts to balance driverSex. 39% of data from females, 61% from males.
-xtabs(~ driverSex, cuts) / length(cuts$rater)
-contrasts(cuts$driverSex) = cbind('MvF' = c(-.61, .39))
+xtabs(~ driverSex, cuts2) / length(cuts2$rater)
+contrasts(cuts2$driverSex) = cbind('Male' = c(-.61, .39))
 
-# Adjust contrasts to balance interType. 28% of data from 3-way stops, 72% from 4-way stops.
-#xtabs(~ interType, cuts) / length(cuts$rater)
-#contrasts(cuts$interType) = cbind('4v3' = c(-.72, .28))
+# Model with maximal random effects structure. Multiple convergence warnings.
+cuts.glmer19 <- glmer(cutoff == "yes" ~ vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2 + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|rater) + (1 + (vehicleStatus + traffic + vehicleStatus:traffic + driverSex + driverAge + time2)|interID), data = cuts2, family = "binomial")
 
-# Start out with a model with just driver sex, age, and time, with the maximal random effects structure. Shows null effects of driverSex, B = 0.097, z = 0.48, p = 0.63, cDriverAge, B = 0.059, z = 0.44, p = 0.66, and cTime2, B = -0.029, z = -0.69, p = 0.49.
-#cuts.glmer11 = glmer(cutoff == 'yes' ~ driverSex + cDriverAge + cTime2 + (1 + (driverSex + cDriverAge + cTime2)|rater) + (1 + (driverSex + cDriverAge + cTime2)|interID), data = cuts, family = 'binomial')
-
-#******** Based on the results for cuts.glmer11 we can drop driverSex, cDriverAge and cTime2 from the main model. That gives us cuts.glmer12 (below), which includes fixed effects for vehicle status, traffic, and their interaction, and the full random effects structure for raters and intersections (random intercepts plus random slopes for all fixed effects). The model shows the expected effects of vehicle status, B = 0.21, z = 2.44, p = 0.015, traffic, B = 0.25, z = 2.93, p = 0.0034, but no interaction between the two, B = -0.085, z = -1.21, p = 0.22.
-#cuts.glmer12 = glmer(cutoff == 'yes' ~ cVehicleStatus + cTraffic + cVehicleStatus:cTraffic + (1 + (cVehicleStatus + cTraffic + cVehicleStatus:cTraffic)|rater) + (1 + (cVehicleStatus + cTraffic + cVehicleStatus:cTraffic)|interID), data = cuts, family = 'binomial')
-
-# Try fullest model with new version of lme4. This converges with statsig effects of vehicle status and traffic, but no status x traffic interaction. Note that this is using the newest version of the lme4 package, so parameter estimates are slightly different. Also, it seems to be more warning-happy: throws 5 warnings but still gives sensible output. Online comments from Ben Bolker (who's in charge of lme development) say that these warnings are probably in error and they're working to fix them. Makes writeup simpler because we only have to report results for a single model with max ranef.
-cuts.glmer19 = glmer(cutoff == 'yes' ~ cVehicleStatus + cTraffic + cVehicleStatus:cTraffic + driverSex + cDriverAge + cTime2 + (1 + (cVehicleStatus + cTraffic + cVehicleStatus:cTraffic + driverSex + cDriverAge + cTime2)|rater) + (1 + (cVehicleStatus + cTraffic + cVehicleStatus:cTraffic + driverSex + cDriverAge + cTime2)|interID), data = cuts, family = 'binomial')
-
-# May have to tweat above model a bit to get rid of errors...
-
-# Warning messages:
-#     1: In commonArgs(par, fn, control, environment()) :
-#     maxfun < 10 * length(par)^2 is not recommended.
-# 2: In optwrap(optimizer, devfun, start, rho$lower, control = control,  :
-#                   convergence code 1 from bobyqa: bobyqa -- maximum number of function evaluations exceeded
-#               3: In (function (fn, par, lower = rep.int(-Inf, n), upper = rep.int(Inf,  :
-#                                                                                       failure to converge in 10000 evaluations
-#                                                                                   4: In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
-#                                                                                                       Model failed to converge with max|grad| = 0.0750656 (tol = 0.001, component 15)
-#                                                                                                   5: In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
-#                                                                                                                       Model failed to converge: degenerate  Hessian with 1 negative eigenvalues
+# Restart from previous fit, but now bumping up the maximum number of iterations and using the bobyqa optimizer for both phases.
+ss <- getME(cuts.glmer19, c("theta","fixef"))
+cuts.glmer20 <- update(cuts.glmer19, start = ss, control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e6)))
 
 
 
 
-
-
-
-
-
+                                    
+                                    
 
 # Print variance-covariance matrix. This is required for submission to Arcchives of Scientific Psychology.
 vcov(cuts.glmer19)
