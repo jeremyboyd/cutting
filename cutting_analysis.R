@@ -177,24 +177,8 @@ cuts.glmer19 <- glmer(cutoff == "yes" ~ vehicleStatus + traffic + vehicleStatus:
 ss <- getME(cuts.glmer19, c("theta","fixef"))
 cuts.glmer20 <- update(cuts.glmer19, start = ss, control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e6)))
 
-
-
-
-                                    
-                                    
+# Calculate 95% CIs for fixed effects parameters using the Wald method. This is required for submissions to the Personality and Social Psychology Bulletin.
+ci.wald <- confint(cuts.glmer20, level = 0.95, method = "Wald", .progress = "txt")
 
 # Print variance-covariance matrix. This is required for submission to Arcchives of Scientific Psychology.
-vcov(cuts.glmer19)
-
-# Calculate 95% CIs for the vehicle status and traffic parameters. This is required for submission to Personality and Social Psychology Bulletin.
-nranpars = length(getME(cuts.glmer19, "theta"))
-nfixpars = length(fixef(cuts.glmer19))
-
-# Calculate CIs using bootstrapping method. Takes forever! And for just 200 simulations it's not giving CIs that match with p-values. Try with nsim = 1000 over weekend.
-#ci.boot = confint(cuts.glmer19, level = 0.95, method = "boot", nsim = 1000, parm = (nranpars + 2):(nranpars + 7), parallel = "multicore", ncpus = 4)
-
-# Calculate CIs using profile method. Throws an error: "Error in profile.merMod(object, which = parm, signames = oldNames, ...) : Profiling over both the residual variance and fixed effects is not numerically consistent with profiling over the fixed effects only"
-#ci.profile = confint(cuts.glmer19, level = 0.95, method = "profile", .progress = "txt")
-
-# Calculate CIs using Wald method. Very fast! And gives CIs that match up with p-values.
-ci.wald = confint(cuts.glmer19, level = 0.95, method = "Wald", .progress = "txt")
+vcov(cuts.glmer20)
