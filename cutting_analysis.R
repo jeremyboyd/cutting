@@ -1,5 +1,5 @@
 # Author: Jeremy Boyd (jboyd@ucsd.edu)
-# Date: November 5, 2014
+# Date: May 11, 2015
 # Summary: Analysis of HDP 181 Experiment 1B data: effects of driver SES
 # on cutting behavior at all-way stops. NOTE: Datapoint me10 was missing its
 # time, so I estimated time as being in between datapoints me09 and me11.
