@@ -60,11 +60,12 @@ cuts$cutoff2 = as.numeric(ifelse(cuts$cutoff == 'yes', 1, 0))
 cuts$traffic2 = factor(ifelse(cuts$traffic <= 2, 'low', 'high'))
 cuts.sum4 = ddply(cuts, c('vehicleStatus', 'traffic2'), summarise, mean = mean(cutoff2) * 100, se = std.error(cutoff2) * 100)
 pd <- position_dodge(0.16)
-ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick2', 'deepskyblue3')) + theme(legend.position = c(.86, .807), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
+ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('gray60', 'black')) + theme(legend.position = c(.86, .807), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
 
 # Create png and pdf versions of the figure.
-ggsave(filename = 'vehicleStatusByTraffic.png', width = 3.5, height = 3, dpi = 400)
-ggsave(filename = 'vehicleStatusByTraffic.pdf', width = 3.5, height = 3)
+ggsave(filename = 'figure4.png', width = 3.5, height = 3, dpi = 400)
+ggsave(filename = 'figure4.pdf', width = 3.5, height = 3)
+ggsave(filename = 'figure4.jpeg', width = 3.5, height = 3, dpi = 1000, units = "in")
 
 # Figure of vehicleStatus predicting proportion of cuts.
 cuts.sum1 = ddply(cuts, 'vehicleStatus', summarise, mean = mean(cutoff2), se = std.error(cutoff2))
@@ -91,14 +92,23 @@ ggsave(filename = 'traffic.pdf', width = 6, height = 4.5)
 
 # Make a prediction figure for no interaction
 noInter = data.frame(vehicleStatus = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5), traffic = c('high', 'low', 'high', 'low', 'high', 'low', 'high', 'low', 'high', 'low'), mean = c(40, 20, 46, 26, 52, 32, 58, 38, 64, 44))
-pred1 = ggplot(noInter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick2', 'deepskyblue3')) + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.text.x = element_blank()) +  ggtitle("Ethics")
+pred1 = ggplot(noInter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('gray60', 'black')) + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.text.x = element_blank()) +  ggtitle("Ethics")
 
 # Make interaction prediction figure
 inter = data.frame(vehicleStatus = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5), traffic = c('high', 'low', 'high', 'low', 'high', 'low', 'high', 'low', 'high', 'low'), mean = c(30, 30, 40, 32, 50, 34, 60, 36, 70, 38))
-pred2 = ggplot(inter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy',  'Light'), values = c('firebrick2', 'deepskyblue3')) + theme(axis.text.y = element_blank(), axis.text.x = element_blank(), legend.position = 'none') + ggtitle("Attention")
+pred2 = ggplot(inter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy',  'Light'), values = c('gray60', 'black')) + theme(axis.text.y = element_blank(), axis.text.x = element_blank(), legend.position = 'none') + ggtitle("Attention")
 
 # Combine into 1 x 2 plot
-pdf('predictions.pdf', width = 7.25, height = 2.3)
+pdf('figure1.pdf', width = 7.25, height = 2.3)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(1, 200)))
+vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+print(pred2, vp = vplayout(1, 1:87))
+print(pred1, vp = vplayout(1, 88:200))
+dev.off()
+
+# Same as above but jpeg format
+jpeg('figure1.jpeg', width = 7.25, height = 2.3, units = "in", quality = 100, res = 1000)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(1, 200)))
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
@@ -141,7 +151,18 @@ cuts$time3 = as.numeric(cuts$time2)
 figE = ggplot(cuts, aes(x = time3)) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50') + scale_x_continuous(name = 'Time of Day (24-Hour Clock)', limits = c(0, 23), breaks = seq(0, 23, 1)) + scale_y_continuous(name = 'Frequency', limits = c(0, 120), breaks = seq(0, 120, 20)) + ggtitle('E.')
 
 # Arrange all figures in same image file.
-pdf('dists.pdf', width = 7.25, height = 6)
+pdf('figure3.pdf', width = 7.25, height = 6)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(3, 2)))
+print(figA, vp = vplayout(1, 1))
+print(figB, vp = vplayout(1, 2))
+print(figC, vp = vplayout(2, 1))
+print(figD, vp = vplayout(2, 2))
+print(figE, vp = vplayout(3, 1:2))
+dev.off()
+
+# JPG version of above image
+jpeg('figure3.jpeg', width = 7.25, height = 6, units = "in", quality = 100, res = 1000)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(3, 2)))
 print(figA, vp = vplayout(1, 1))
