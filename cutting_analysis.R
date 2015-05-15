@@ -59,7 +59,8 @@ cuts$cutoff2 = as.numeric(ifelse(cuts$cutoff == 'yes', 1, 0))
 # Interaction of vehicleStatus and traffic, with traffic coded as low (1-2) vs. high (3-6). This gives us 421 datapoints in the low category (55%), and 338 in the high category (45%).
 cuts$traffic2 = factor(ifelse(cuts$traffic <= 2, 'low', 'high'))
 cuts.sum4 = ddply(cuts, c('vehicleStatus', 'traffic2'), summarise, mean = mean(cutoff2) * 100, se = std.error(cutoff2) * 100)
-ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15) + geom_line() + geom_point() + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick2', 'deepskyblue3')) + theme(legend.position = 'top')
+pd <- position_dodge(0.16)
+ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick2', 'deepskyblue3')) + theme(legend.position = c(.75, .79), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
 
 # Create png and pdf versions of the figure.
 ggsave(filename = 'vehicleStatusByTraffic.png', width = 3.5, height = 3, dpi = 400)
