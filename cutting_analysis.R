@@ -68,10 +68,10 @@ ggsave(filename = 'figure4.pdf', width = 3.5, height = 3)
 ggsave(filename = 'figure4.jpeg', width = 3.5, height = 3, dpi = 1000, units = "in")
 
 # Same figure as above, but use colors and save as PDF and SVG
-ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick', 'deepskyblue')) + theme(legend.position = c(.86, .807), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
+ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick', 'deepskyblue')) + theme_classic() + theme(legend.position = c(.85, .80), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
 ggsave(filename = 'figure4.svg', width = 3.5, height = 3)
 ggsave(filename = 'figure4_color.pdf', width = 3.5, height = 3)
-ggsave(filename = 'figure4_color.png', width = 3.5, height = 3, dpi = 400)
+ggsave(filename = 'figure4_color.png', width = 3.5, height = 2.6, dpi = 400)
 
 # Figure of vehicleStatus predicting proportion of cuts.
 cuts.sum1 = ddply(cuts, 'vehicleStatus', summarise, mean = mean(cutoff2), se = std.error(cutoff2))
