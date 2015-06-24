@@ -1,5 +1,5 @@
 # Author: Jeremy Boyd (jboyd@ucsd.edu)
-# Date: May 15, 2015
+# Date: June 24, 2015
 # Summary: Analysis of HDP 181 Experiment 1B data: effects of driver SES
 # on cutting behavior at all-way stops. NOTE: Datapoint me10 was missing its
 # time, so I estimated time as being in between datapoints me09 and me11.
@@ -62,16 +62,17 @@ cuts.sum4 = ddply(cuts, c('vehicleStatus', 'traffic2'), summarise, mean = mean(c
 pd <- position_dodge(0.16)
 ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('gray60', 'black')) + theme(legend.position = c(.86, .807), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
 
-# Create png and pdf versions of the figure.
+# Create png, pdf, and jpeg versions of the figure.
 ggsave(filename = 'figure4.png', width = 3.5, height = 3, dpi = 400)
 ggsave(filename = 'figure4.pdf', width = 3.5, height = 3)
 ggsave(filename = 'figure4.jpeg', width = 3.5, height = 3, dpi = 1000, units = "in")
 
-# Same figure as above, but use colors and save as PDF and SVG
+# Same figure as above, but use colors and classic theme.
 ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick', 'deepskyblue')) + theme_classic() + theme(legend.position = c(.85, .80), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
-ggsave(filename = 'figure4.svg', width = 3.5, height = 3)
-ggsave(filename = 'figure4_color.pdf', width = 3.5, height = 3)
-ggsave(filename = 'figure4_color.png', width = 3.5, height = 2.6, dpi = 400)
+ggsave(filename = "figure4_color.svg", width = 3.5, height = 3)
+ggsave(filename = "figure4_color.pdf", width = 3.5, height = 3)
+ggsave(filename = "figure4_color.png", width = 3.5, height = 2.6, dpi = 400)
+ggsave(filename = "figure4_color.eps", width = 3.5, height = 2.6, dpi = 400)
 
 # Figure of vehicleStatus predicting proportion of cuts.
 cuts.sum1 = ddply(cuts, 'vehicleStatus', summarise, mean = mean(cutoff2), se = std.error(cutoff2))
@@ -98,11 +99,11 @@ ggsave(filename = 'traffic.pdf', width = 6, height = 4.5)
 
 # Make a prediction figure for no interaction
 noInter = data.frame(vehicleStatus = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5), traffic = c('high', 'low', 'high', 'low', 'high', 'low', 'high', 'low', 'high', 'low'), mean = c(40, 20, 46, 26, 52, 32, 58, 38, 64, 44))
-pred1 = ggplot(noInter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('gray60', 'black')) + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.text.x = element_blank()) +  ggtitle("Ethics")
+pred1 = ggplot(noInter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick', 'deepskyblue')) + theme_classic() + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.text.x = element_blank()) +  ggtitle("Ethics")
 
 # Make interaction prediction figure
 inter = data.frame(vehicleStatus = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5), traffic = c('high', 'low', 'high', 'low', 'high', 'low', 'high', 'low', 'high', 'low'), mean = c(30, 30, 40, 32, 50, 34, 60, 36, 70, 38))
-pred2 = ggplot(inter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy',  'Light'), values = c('gray60', 'black')) + theme(axis.text.y = element_blank(), axis.text.x = element_blank(), legend.position = 'none') + ggtitle("Attention")
+pred2 = ggplot(inter, aes(x = factor(vehicleStatus), y = mean, color = traffic, group = traffic)) + geom_line() + geom_point() + scale_x_discrete(name = 'Driver SES') + scale_y_continuous(name = 'Cut Likelihood', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy',  'Light'), values = c('firebrick', 'deepskyblue')) + theme_classic() + theme(axis.text.y = element_blank(), axis.text.x = element_blank(), legend.position = 'none') + ggtitle("Attention")
 
 # Combine into 1 x 2 plot
 pdf('figure1.pdf', width = 7.25, height = 2.3)
@@ -131,6 +132,15 @@ print(pred2, vp = vplayout(1, 1:87))
 print(pred1, vp = vplayout(1, 88:200))
 dev.off()
 
+# EPS format
+postscript(file = "figure1.eps", width = 7.25, height = 2.3, horizontal = FALSE, onefile = FALSE)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(1, 200)))
+vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+print(pred2, vp = vplayout(1, 1:87))
+print(pred1, vp = vplayout(1, 88:200))
+dev.off()
+
 ################################################################
 # FIGURES/TABLES SUMMARIZING THE DATA
 ################################################################
@@ -150,20 +160,20 @@ xtabs(~ driverAge, cuts) / length(cuts$driverAge)
 fontSize = 3
 
 # Frequency distribution of vehicle status. Shows a median vehicle status of 3 (n = 220).
-figA = ggplot(cuts, aes(x = factor(vehicleStatus))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Frequency', limits = c(0, 250), breaks = seq(0, 250, 50)) + ggtitle('A.')
+figA = ggplot(cuts, aes(x = factor(vehicleStatus))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Frequency', limits = c(0, 250), breaks = seq(0, 250, 50)) + ggtitle('A.') + theme_classic()
 
 # Frequency distribution of traffic. Shows a median of 2 (n = 257) with decreasing amounts of data after that. Maximum traffic for these data was 6 (n = 3).
-figB = ggplot(cuts, aes(x = factor(traffic))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Traffic') + scale_y_continuous(name = 'Frequency', limits = c(0, 290), breaks = seq(0, 260, 50)) + ggtitle('B.')
+figB = ggplot(cuts, aes(x = factor(traffic))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Traffic') + scale_y_continuous(name = 'Frequency', limits = c(0, 290), breaks = seq(0, 260, 50)) + ggtitle('B.') + theme_classic()
 
 # Frequency distribution of driverSex. Shows 39% of drivers were female, 61% were male.
-figC = ggplot(cuts, aes(x = driverSex)) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1)  + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Driver Sex', labels = c('Female', 'Male')) + scale_y_continuous(name = 'Frequency', limits = c(0, 520), breaks = seq(0, 500, 100)) + ggtitle('C.')
+figC = ggplot(cuts, aes(x = driverSex)) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1)  + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Driver Sex', labels = c('Female', 'Male')) + scale_y_continuous(name = 'Frequency', limits = c(0, 520), breaks = seq(0, 500, 100)) + ggtitle('C.') + theme_classic()
 
 # Frequency distribution of driverAge. The majority of drivers (n = 407 were perceived to be between 16-35 years old.
-figD = ggplot(cuts, aes(x = factor(driverAge))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Driver Age (Years)', labels = c('16-35', '36-55', '56+')) + scale_y_continuous(name = 'Frequency', limits = c(0, 460), breaks = seq(0, 420, 100)) + ggtitle('D.')
+figD = ggplot(cuts, aes(x = factor(driverAge))) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50', width = 1) + geom_text(size = fontSize, stat = 'bin', binwidth = 1, aes(y = ..count.., label = sprintf("%.1f%%", ..count.. / 759 * 100)), vjust = -.5) + scale_x_discrete(name = 'Driver Age (Years)', labels = c('16-35', '36-55', '56+')) + scale_y_continuous(name = 'Frequency', limits = c(0, 460), breaks = seq(0, 420, 100)) + ggtitle('D.') + theme_classic()
 
 # Frequency distribution of time of day. Shows a median from 18:00-18:59 (6-6:59pm), with most data collected between 12:00 and 19:00.
 cuts$time3 = as.numeric(cuts$time2)
-figE = ggplot(cuts, aes(x = time3)) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50') + scale_x_continuous(name = 'Time of Day (24-Hour Clock)', limits = c(0, 23), breaks = seq(0, 23, 1)) + scale_y_continuous(name = 'Frequency', limits = c(0, 120), breaks = seq(0, 120, 20)) + ggtitle('E.')
+figE = ggplot(cuts, aes(x = time3)) + geom_histogram(binwidth = 1, color = 'black', fill = 'gray50') + scale_x_continuous(name = 'Time of Day (24-Hour Clock)', limits = c(0, 23), breaks = seq(0, 23, 1)) + scale_y_continuous(name = 'Frequency', limits = c(0, 120), breaks = seq(0, 120, 20)) + ggtitle('E.') + theme_classic()
 
 # Arrange all figures in same image file.
 pdf('figure3.pdf', width = 7.25, height = 6)
@@ -189,6 +199,17 @@ dev.off()
 
 # SVG of above image
 svg('figure3.svg', width = 7.25, height = 6)
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(3, 2)))
+print(figA, vp = vplayout(1, 1))
+print(figB, vp = vplayout(1, 2))
+print(figC, vp = vplayout(2, 1))
+print(figD, vp = vplayout(2, 2))
+print(figE, vp = vplayout(3, 1:2))
+dev.off()
+
+# EPS of above image
+postscript(file = "figure3.eps", width = 7.25, height = 6, horizontal = FALSE, onefile = FALSE)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(3, 2)))
 print(figA, vp = vplayout(1, 1))
