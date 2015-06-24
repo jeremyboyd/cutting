@@ -249,5 +249,5 @@ cuts2.glmer2 <- update(cuts2.glmer1, start = ss, control = glmerControl(optimize
 # Calculate 95% CIs for fixed effects parameters using the Wald method. This is required for submissions to the Personality and Social Psychology Bulletin.
 ci.wald <- confint(cuts2.glmer2, level = 0.95, method = "Wald", .progress = "txt")
 
-# Print variance-covariance matrix. This is required for submission to Arcchives of Scientific Psychology.
+# Print variance-covariance matrix. This is required for submission to some journals.
 vcov(cuts2.glmer2)
