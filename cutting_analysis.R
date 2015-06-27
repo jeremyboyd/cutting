@@ -1,5 +1,5 @@
 # Author: Jeremy Boyd (jboyd@ucsd.edu)
-# Date: June 24, 2015
+# Date: June 26, 2015
 # Summary: Analysis of HDP 181 Experiment 1B data: effects of driver SES
 # on cutting behavior at all-way stops. NOTE: Datapoint me10 was missing its
 # time, so I estimated time as being in between datapoints me09 and me11.
@@ -12,6 +12,7 @@ library(lme4)
 library(plyr)
 library(gridExtra)
 library(dplyr)
+library(extrafont)
 
 # Read in data.
 cuts = read.delim('Experiment 1B data 140122.txt', header = TRUE)
@@ -72,7 +73,15 @@ ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, gro
 ggsave(filename = "figure4_color.svg", width = 3.5, height = 3)
 ggsave(filename = "figure4_color.pdf", width = 3.5, height = 3)
 ggsave(filename = "figure4_color.png", width = 3.5, height = 2.6, dpi = 400)
-ggsave(filename = "figure4_color.eps", width = 3.5, height = 2.6, dpi = 400)
+
+# Make EPS version of figure.
+loadfonts(device = "postscript")
+postscript(file = "Fig4.eps", width = 3.5, height = 2.6, paper = "special", horizontal = FALSE, onefile = FALSE, fonts = "Arial")
+ggplot(cuts.sum4, aes(x = factor(vehicleStatus), y = mean, color = traffic2, group = traffic2)) + geom_line(position = pd) + geom_errorbar(aes(ymax = mean + se, ymin = mean - se), color = 'black', width = .15, position = pd) + geom_point(position = pd) + scale_x_discrete(name = 'Vehicle Value') + scale_y_continuous(name = 'Cut Likelihood (%)', limits = c(0, 100), breaks = seq(0, 100, 20)) + scale_color_manual(name = 'Traffic', labels = c('Heavy', 'Light'), values = c('firebrick', 'deepskyblue')) + theme_classic() + theme(legend.position = c(.85, .80), legend.background = element_rect(fill = "transparent"), legend.key = element_rect(fill = "transparent", color = "transparent"), legend.title.align = .5)
+dev.off()
+
+# Embed fonts
+embed_fonts("./Fig4.eps", outfile = "./Fig4-embed.eps", options = "-dEPSCrop")
 
 # Figure of vehicleStatus predicting proportion of cuts.
 cuts.sum1 = ddply(cuts, 'vehicleStatus', summarise, mean = mean(cutoff2), se = std.error(cutoff2))
@@ -133,13 +142,16 @@ print(pred1, vp = vplayout(1, 88:200))
 dev.off()
 
 # EPS format
-postscript(file = "figure1.eps", width = 7.25, height = 2.3, horizontal = FALSE, onefile = FALSE)
+postscript(file = "Fig1.eps", width = 7.25, height = 2.3, paper = "special", horizontal = FALSE, onefile = FALSE, fonts = "Arial")
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(1, 200)))
 vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 print(pred2, vp = vplayout(1, 1:87))
 print(pred1, vp = vplayout(1, 88:200))
 dev.off()
+
+# Embed fonts
+embed_fonts("./Fig1.eps", outfile = "./Fig1-embed.eps", options = "-dEPSCrop")
 
 ################################################################
 # FIGURES/TABLES SUMMARIZING THE DATA
@@ -209,7 +221,7 @@ print(figE, vp = vplayout(3, 1:2))
 dev.off()
 
 # EPS of above image
-postscript(file = "figure3.eps", width = 7.25, height = 6, horizontal = FALSE, onefile = FALSE)
+postscript(file = "Fig3.eps", width = 7.25, height = 6, paper = "special", horizontal = FALSE, onefile = FALSE, fonts = "Arial")
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(3, 2)))
 print(figA, vp = vplayout(1, 1))
@@ -218,6 +230,9 @@ print(figC, vp = vplayout(2, 1))
 print(figD, vp = vplayout(2, 2))
 print(figE, vp = vplayout(3, 1:2))
 dev.off()
+
+# Embed fonts
+embed_fonts("./Fig3.eps", outfile = "./Fig3-embed.eps", options = "-dEPSCrop")
 
 ################################################################
 # MIXED MODEL WITH RANDOM EFFECTS FOR RATERS & INTERSECTIONS
