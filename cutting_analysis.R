@@ -15,7 +15,7 @@ library(dplyr)
 library(extrafont)
 
 # Read in data.
-cuts = read.delim('Experiment 1B data 140122.txt', header = TRUE)
+cuts <- read.delim("Experiment 1B data 140122.txt", header = TRUE)
 
 ################################################################
 # CLEAN UP DATA
@@ -243,6 +243,9 @@ cuts$time2 <- as.numeric(cuts$time2)
 
 # Make subset with only those variables that will be used in model.
 cuts2 <- select(cuts, rater, interID, vehicleStatus, traffic, driverSex, driverAge, time2, cutoff)
+
+# Write cuts2 to disk for later use in predictive models.
+write.table(cuts2, file = "cleaned_up_for_prediction.txt", sep = "\t", row.names = FALSE)
 
 # Convert continuous predictors to z-scores using scale(). This is done in an effort to get rid of warnings when I try to fit a glmer model below.
 cuts2$vehicleStatus <- scale(cuts2$vehicleStatus)
