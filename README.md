@@ -1,3 +1,3 @@
 # cutting
 
-This is a dataset and analysis of driver cutting behavior at 46 all-way stop intersections in Southern California. The data show that drivers of more expensive cars are more likely to cut than drivers of less expensive cars. This replicates a result from Piff et al. (2012).
+This is a dataset and analysis of driver cutting behavior at 46 all-way stop intersections in Southern California. "1_cutting_analysis.R" organizes and analyzes the data with a mixed effects model. "2_predict_cutting.R" trains random forest models on a subset of the data, then tests the models' predicitve accuracy on a test set.
