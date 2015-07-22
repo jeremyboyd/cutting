@@ -42,7 +42,7 @@ get_accuracy <- function(seeds, predictors) {
     cuts.cf <- cforest(formula, data = train.dat,
                        controls = cforest_unbiased(ntree = 1000))
     
-    # Store cut.cf1 predictions as a new column in test.dat.
+    # Store cuts.cf predictions as a new column in test.dat.
     test.dat$cutoff_predicted <- predict(cuts.cf, test.dat, OOB = TRUE,
                                          type = "response")
     
@@ -56,25 +56,36 @@ get_accuracy <- function(seeds, predictors) {
 }
 
 ##########################################################################
-# Measure the predictive accuracy of 100 different random forest models
-# using the full set of five predictors.
+# Model 0
+# Null model. Predictor variable is random.
 ##########################################################################
+
+# Add a column of random numbers to cuts.
+cuts$rand <- runif(nrow(cuts), 0, 1)
 
 # Create a list of random seeds to use.
 seeds <- c(1:100)
 
 # Loop over seeds.
-accuracy_5_pred <- unlist(lapply(seeds, get_accuracy,
+model0 <- unlist(lapply(seeds, get_accuracy, predictors = c("rand")))
+
+##########################################################################
+# MODEL 1
+# Model 1 includes all five predictors.
+##########################################################################
+
+# Create a list of random seeds to use.
+#seeds <- c(1:100)
+seeds <- c(1:10)
+
+# Loop over seeds.
+model1 <- unlist(lapply(seeds, get_accuracy,
                                  predictors = c("vehicleStatus", "traffic",
                                                 "driverSex", "driverAge",
                                                 "time2")))
 
 ##########################################################################
-# Measure the predictive accuracy of 100 different random forest models
-# using the full set of five predictors, minus vehicleStatus.
+# Model comparison.
 ##########################################################################
 
-# Loop over seeds.
-accuracy_5_pred_vehicleStatus <- unlist(lapply(seeds, get_accuracy,
-                                 predictors = c("traffic", "driverSex",
-                                                "driverAge", "time2")))
+# Non-parametric test to compare predictive accuracy in model0 vs. model1.
