@@ -50,9 +50,10 @@ get_accuracy <- function(seeds, predictors) {
     # Convert string to an R formula.
     formula <- as.formula(formula)
          
-    # Specify random forest model.
+    # Specify random forest model. For 7 predictors, set mtry to
+    # sqrt(7) ~ 3. 
     cuts.cf <- cforest(formula, data = imbal_train,
-                       controls = cforest_unbiased(mtry = 2,
+                       controls = cforest_unbiased(mtry = 3,
                                                    ntree = 2500))
     
     # Store cuts.cf predictions as a new column in imbal_test.
