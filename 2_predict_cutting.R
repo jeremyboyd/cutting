@@ -1,9 +1,10 @@
 # Author: Jeremy Boyd (jboyd@ucsd.edu)
-# Date: July 22, 2015
-# Summary: Predictive models of the cutting dataset.
+# Summary: Predictive model of the cutting dataset.
 
 # Load party package.
 library(party)
+library(caret)
+library(dplyr)
 
 # Read in data.
 cuts <- read.delim("cleaned_up_for_prediction.txt", header = TRUE)
@@ -20,72 +21,75 @@ get_accuracy <- function(seeds, predictors) {
     # Set seed.
     set.seed(seeds)
     
-    # Use 2/3 of data for training, the remaining 1/3 for test.
-    train <- sample(759, 506)
-    train.dat <- cuts[train, ]
-    test.dat <- cuts[-train, ]
+    # Use 659 observations for training, test on 100.
+    train <- sample(759, 659)
+    imbal_train <- cuts[train, ]
+    imbal_test <- cuts[-train, ]
     
-    # Create model formula.
-    # Concatenate predictor names into a single string.
+    # Create down and upsampled training sets to balance the number
+    # of observations at each level of cutoff. This doesn't improve
+    # performance.
+#     down_train <- downSample(x = imbal_train[, -ncol(imbal_train)],
+#                              y = imbal_train$cutoff)
+#     down_train <- rename(down_train, cutoff = Class)
+# 
+#     up_train <- upSample(x = imbal_train[, -ncol(imbal_train)],
+#                          y = imbal_train$cutoff)
+#     up_train <- rename(up_train, cutoff = Class)
+    
+    # Concatenate predictor names into a single string for use in
+    # model formula.
     predictors <- paste(predictors, collapse = " + ")
     
     # Concatenate dependent variable and predictors into formula string.
     formula <- paste("cutoff ~ ", predictors, sep = "")
     
     # User output.
-    cat("Formula: ", formula, ".", "\n", sep = "")
+    cat("Formula:", formula, "\n", sep = " ")
     
     # Convert string to an R formula.
     formula <- as.formula(formula)
          
     # Specify random forest model.
-    cuts.cf <- cforest(formula, data = train.dat,
-                       controls = cforest_unbiased(ntree = 1000))
+    cuts.cf <- cforest(formula, data = imbal_train,
+                       controls = cforest_unbiased(mtry = 2,
+                                                   ntree = 2500))
     
-    # Store cuts.cf predictions as a new column in test.dat.
-    test.dat$cutoff_predicted <- predict(cuts.cf, test.dat, OOB = TRUE,
-                                         type = "response")
-    
+    # Store cuts.cf predictions as a new column in imbal_test.
+    imbal_test$cutoff_predicted <- predict(cuts.cf, imbal_test, OOB = TRUE,
+                                     type = "response")
+
     # Compare observed and predicted cutoff values. Code correct
     # predictions as 1, incorrect as 0.
-    test.dat$correct_prediction <- ifelse(test.dat$cutoff == test.dat$cutoff_predicted,
-                                          1, 0)
-    
+    imbal_test$correct_prediction <- ifelse(
+        imbal_test$cutoff == imbal_test$cutoff_predicted, 1, 0)
+
     # Calculate and return model's predictive accuracy on the test set.
-    return(mean(test.dat$correct_prediction))    
+    return(mean(imbal_test$correct_prediction))    
 }
 
 ##########################################################################
-# Model 0
-# Null model. Predictor variable is random.
-##########################################################################
-
-# Add a column of random numbers to cuts.
-cuts$rand <- runif(nrow(cuts), 0, 1)
-
-# Create a list of random seeds to use.
-seeds <- c(1:100)
-
-# Loop over seeds.
-model0 <- unlist(lapply(seeds, get_accuracy, predictors = c("rand")))
-
-##########################################################################
-# MODEL 1
-# Model 1 includes all five predictors.
+# Model including all predictors.
 ##########################################################################
 
 # Create a list of random seeds to use.
-#seeds <- c(1:100)
 seeds <- c(1:10)
 
 # Loop over seeds.
 model1 <- unlist(lapply(seeds, get_accuracy,
                                  predictors = c("vehicleStatus", "traffic",
                                                 "driverSex", "driverAge",
-                                                "time2")))
+                                                "time2", "rater", "interID")))
+
+# Mean predictive accuracy across all models.
+mean(model1)
 
 ##########################################################################
-# Model comparison.
+# Compare to baseline.
 ##########################################################################
 
-# Non-parametric test to compare predictive accuracy in model0 vs. model1.
+# Baseline is the proportion of observations where drivers didn't cut.
+baseline <- unname(xtabs(~ cutoff, cuts) / nrow(cuts))[1]
+
+# Compare model1 results to baseline. No evidence of improvement over baseline.
+wilcox.test(jitter(model1), mu = baseline)
