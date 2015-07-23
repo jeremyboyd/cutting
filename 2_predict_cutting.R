@@ -88,8 +88,13 @@ mean(model1)
 # Compare to baseline.
 ##########################################################################
 
-# Baseline is the proportion of observations where drivers didn't cut.
-baseline <- unname(xtabs(~ cutoff, cuts) / nrow(cuts))[1]
+# baseline1 is .5.
+baseline1 <- .5
 
-# Compare model1 results to baseline. No evidence of improvement over baseline.
-wilcox.test(jitter(model1), mu = baseline)
+# baseline2 is the number of drivers who didn't cut.
+baseline2 <- unname(xtabs(~ cutoff, cuts) / nrow(cuts))[1]
+
+# Compare model1 results to baselines 1 and 2. Shows significant
+# improvements in accuracy over baseline1, but not baseline2.
+wilcox.test(jitter(model1), mu = baseline1)
+wilcox.test(jitter(model1), mu = baseline2)
