@@ -92,7 +92,7 @@ mean(model1)
 # baseline1 is .5.
 baseline1 <- .5
 
-# baseline2 is the number of drivers who didn't cut.
+# baseline2 is the proportion of drivers who didn't cut.
 baseline2 <- unname(xtabs(~ cutoff, cuts) / nrow(cuts))[1]
 
 # Compare model1 results to baselines 1 and 2. Shows significant
